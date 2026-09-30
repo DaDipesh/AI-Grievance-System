@@ -12,6 +12,7 @@ from app.config import get_settings
 from app.database import init_db
 from app.i18n import message
 from app.routes import router
+from app.services.email_service import smtp_server_label
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("grievance.api")
@@ -35,6 +36,8 @@ if FRONTEND_DIR.exists():
 def startup() -> None:
     init_db()
     logger.info("AI Grievance System started with password authentication.")
+    # Report the relay host and port only; SMTP credentials are never logged.
+    logger.info("Email notifications use SMTP server %s", smtp_server_label(get_settings()))
 
 @app.get("/")
 def root():

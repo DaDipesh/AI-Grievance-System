@@ -6,7 +6,7 @@ import hmac
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -24,6 +24,7 @@ from app.schemas import (
     LoginRequest, RegisterRequest, TokenOut, UserOut,
 )
 from app.security import create_access_token, current_user, hash_password, normalize_mobile, require_roles, verify_password
+from app.services.email_service import email_event_for_status_transition, send_complaint_notification
 
 router = APIRouter()
 logger = logging.getLogger("grievance.api")
@@ -284,7 +285,7 @@ def preview_complaint(payload: ComplaintCreate, user: User = Depends(require_rol
 
 
 @router.post("/complaints", response_model=ComplaintOut, status_code=201)
-def create_complaint(payload: ComplaintCreate, user: User = Depends(require_roles("citizen")), db: Session = Depends(get_db)):
+def create_complaint(payload: ComplaintCreate, background_tasks: BackgroundTasks, user: User = Depends(require_roles("citizen")), db: Session = Depends(get_db)):
     draft = None
     if payload.preview_token:
         draft = db.scalar(select(ComplaintDraft).where(ComplaintDraft.token == payload.preview_token, ComplaintDraft.citizen_id == user.id))
@@ -326,7 +327,8 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
         location_source=payload.location_source, language=ai_result.get("language"), estimated_resolution_hours=resolution_hours, estimated_resolution_days=resolution_days,
         evidence_path=evidence_name, ai_response=ai_result.get("response"), duplicate_flag=bool(duplicate.get("is_duplicate")), duplicate_similarity=duplicate.get("similarity"),
         duplicate_existing_id=str(duplicate.get("existing_complaint_id")) if duplicate.get("existing_complaint_id") is not None else None,
-        assigned_department=department, assigned_officer_id=officer.id if officer else None, sla_due_at=due_at, status="pending",
+        assigned_department=department, assigned_officer_id=officer.id if officer else None, sla_due_at=due_at,
+        status="pending", updated_at=utcnow(),
     )
     db.add(complaint); db.flush()
     db.add(ComplaintStatusHistory(complaint_id=complaint.id, old_status=None, new_status="pending", note="Complaint registered", changed_by_user_id=user.id))
@@ -334,6 +336,15 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
         draft.complaint_id = complaint.id
     # Save complaint and history first; notification issues must not hide a report.
     db.commit(); db.refresh(complaint)
+    background_tasks.add_task(
+        send_complaint_notification,
+        "submitted",
+        user.email,
+        user.name,
+        complaint.ticket_number,
+        complaint.complaint_text,
+        occurred_at=complaint.created_at,
+    )
     try:
         notify_user(db, user.id, "Complaint registered", "शिकायत दर्ज हो गई", message("registered", "en", ticket=ticket, category=complaint.category_predicted or "", city=complaint.city or "", area=complaint.area or ""), message("registered", "hi", ticket=ticket, category=complaint.category_predicted or "", city=complaint.city or "", area=complaint.area or ""), complaint.id, language_override=complaint.language)
         notify_department(db, department, ticket, complaint.category_predicted or "", complaint.id)
@@ -402,8 +413,10 @@ def officer_complaints(user: User = Depends(require_roles("officer", "admin")), 
 
 
 @router.put("/officer/complaints/{complaint_id}/status", response_model=ComplaintOut)
-def update_complaint_status(complaint_id: int, payload: ComplaintStatusUpdate, user: User = Depends(require_roles("officer", "admin")), db: Session = Depends(get_db)):
-    complaint = db.get(Complaint, complaint_id)
+def update_complaint_status(complaint_id: int, payload: ComplaintStatusUpdate, background_tasks: BackgroundTasks, user: User = Depends(require_roles("officer", "admin")), db: Session = Depends(get_db)):
+    # Lock the complaint row so concurrent identical requests cannot schedule
+    # duplicate emails for the same status transition on PostgreSQL.
+    complaint = db.scalar(select(Complaint).where(Complaint.id == complaint_id).with_for_update())
     if complaint is None or not complaint_visible_to(user, complaint):
         raise HTTPException(404, message("not_found", lang(user)))
     old_status = complaint.status
@@ -425,6 +438,7 @@ def update_complaint_status(complaint_id: int, payload: ComplaintStatusUpdate, u
         complaint.resolved_at = None; complaint.resolution_hours_actual = None
     complaint.updated_at = utcnow()
     db.add(ComplaintStatusHistory(complaint_id=complaint.id, old_status=old_status, new_status=payload.status, note=payload.note, changed_by_user_id=user.id))
+    email_event = email_event_for_status_transition(old_status, payload.status)
     if payload.status == "resolved":
         notify_user(db, complaint.citizen_id, "Complaint resolved", "शिकायत का समाधान हो गया", f"Your complaint {complaint.ticket_number} has been resolved.", f"आपकी शिकायत {complaint.ticket_number} का समाधान हो गया है।", complaint.id, language_override=complaint.language)
     else:
@@ -436,6 +450,17 @@ def update_complaint_status(complaint_id: int, payload: ComplaintStatusUpdate, u
         except Exception:
             pass
     db.commit(); db.refresh(complaint)
+    if email_event:
+        background_tasks.add_task(
+            send_complaint_notification,
+            email_event,
+            complaint.citizen.email if complaint.citizen else None,
+            complaint.citizen.name if complaint.citizen else None,
+            complaint.ticket_number,
+            complaint.complaint_text,
+            occurred_at=complaint.resolved_at if email_event == "resolved" else complaint.updated_at,
+            previous_status=old_status,
+        )
     return complaint
 
 

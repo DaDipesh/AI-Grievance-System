@@ -62,6 +62,25 @@ Registration defaults to the citizen role. Admin registration requires the confi
 
 The response now includes the database `id` as well as the public `ticket_number`, so the frontend can safely call the status/history/feedback endpoints without guessing the complaint ID.
 
+## Email notifications
+
+The citizen receives a plain-text email when a complaint is submitted and when an officer or admin moves it to `in_progress` or `resolved`. Sending happens in a background task after the complaint is committed, so a mail failure never rolls back or hides a saved complaint. Failures are logged to the `grievance.email` logger without printing credentials or the server response.
+
+Configure the relay in `backend/.env`:
+
+```text
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_USER=your_brevo_smtp_login
+SMTP_PASS=your_brevo_smtp_key
+SMTP_FROM=your_verified_sender_email
+```
+
+- `SMTP_USER` is the Brevo SMTP login and `SMTP_PASS` is the `xsmtpsib-...` key from **SMTP & API**; they are not your Brevo account password.
+- `SMTP_FROM` must be a sender address already verified in the Brevo account, or Brevo rejects the message.
+- `SMTP_FROM_NAME` sets the display name, and `SMTP_SECURE=true` switches to implicit TLS for port 465. Port 587 upgrades with STARTTLS, which is the recommended setup.
+- Email is skipped with a warning when the recipient has no address or the block is incomplete. The startup line `Email notifications use SMTP server ...` confirms which relay is active.
+
 ## Development demo accounts
 
 `POST /api/v1/dev/seed-demo-users` is available only when `ENVIRONMENT=development`. It creates demo admin/officer users with password `Demo@12345`. It is disabled outside development.
