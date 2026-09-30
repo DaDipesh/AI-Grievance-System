@@ -390,6 +390,10 @@ def update_complaint_status(complaint_id: int, payload: ComplaintStatusUpdate, u
         raise HTTPException(403, "Only administrators can reopen complaints.")
     if old_status == "closed" and payload.status != "closed" and user.role != "admin":
         raise HTTPException(409, "Closed complaints can only be reopened by an administrator.")
+    # A repeated save of the current status is not a transition. Avoid duplicate
+    # history entries, notifications, and training records from dashboard refreshes.
+    if payload.status == old_status and not payload.category_verified:
+        return complaint
     complaint.status, complaint.status_note = payload.status, payload.note
     if payload.category_verified:
         complaint.category_verified = payload.category_verified.strip()
