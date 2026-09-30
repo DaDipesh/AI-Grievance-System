@@ -288,10 +288,18 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
     draft = None
     if payload.preview_token:
         draft = db.scalar(select(ComplaintDraft).where(ComplaintDraft.token == payload.preview_token, ComplaintDraft.citizen_id == user.id))
-        if draft is None or aware(draft.expires_at) <= utcnow():
-            raise HTTPException(410, "Complaint preview has expired. Please analyze the complaint again.")
-        data = draft.payload_json; ai_result = draft.ai_json; ticket = draft.ticket_number
-        payload = ComplaintCreate(**data, preview_token=draft.token)
+        if draft is not None and aware(draft.expires_at) > utcnow():
+            data = draft.payload_json; ai_result = draft.ai_json; ticket = draft.ticket_number
+            payload = ComplaintCreate(**data, preview_token=draft.token)
+        else:
+            # Preview tokens can be lost across a page reload, expire while the
+            # citizen reviews the result, or point at a different backend DB.
+            # The authenticated citizen already submits the full complaint, so
+            # analyze that payload again instead of blocking complaint creation.
+            if draft is not None:
+                db.delete(draft)
+            ai_result = _run_ai(payload)
+            ticket = _new_ticket(db)
     else:
         ai_result = _run_ai(payload); ticket = _new_ticket(db)
 
