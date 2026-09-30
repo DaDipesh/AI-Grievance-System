@@ -32,3 +32,7 @@ Citizens register with a mobile number and password, then complete profile setup
 ## Frontend
 
 The original frontend remains under `smart-grievance-frontend/frontend/`. Backend serving was added so the same files are available directly from port 8765. Additional integration scripts and officer/admin pages were added; existing pages/assets were not deleted.
+
+## Deploy on Render
+
+See [DEPLOY_RENDER.md](DEPLOY_RENDER.md) for the Render Blueprint, secret setup, persistent database/uploads, and first deploy steps. Keep the service root at the repository root because the backend imports the AI engine and serves the frontend from sibling folders.

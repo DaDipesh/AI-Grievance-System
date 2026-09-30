@@ -209,7 +209,10 @@ def _evidence_path(payload: ComplaintCreate) -> tuple[str | None, str | None]:
         return None, None
     if Path(evidence_name).name != evidence_name:
         raise HTTPException(422, "Invalid evidence file id.")
-    path = Path(get_settings().upload_dir).resolve() / evidence_name
+    upload_dir = Path(get_settings().upload_dir)
+    if not upload_dir.is_absolute():
+        upload_dir = Path(__file__).resolve().parents[1] / upload_dir
+    path = upload_dir.resolve() / evidence_name
     if not path.is_file():
         raise HTTPException(404, "Evidence file was not found.")
     return evidence_name, str(path)
@@ -331,7 +334,10 @@ async def upload_evidence(file: UploadFile = File(...), user: User = Depends(req
 def get_evidence(file_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
     if Path(file_id).name != file_id or not any(c.evidence_path == file_id for c in db.scalars(select(Complaint)).all() if complaint_visible_to(user, c)):
         raise HTTPException(404, message("not_found", lang(user)))
-    path = Path(get_settings().upload_dir).resolve() / file_id
+    upload_dir = Path(get_settings().upload_dir)
+    if not upload_dir.is_absolute():
+        upload_dir = Path(__file__).resolve().parents[1] / upload_dir
+    path = upload_dir.resolve() / file_id
     if not path.is_file():
         raise HTTPException(404, message("not_found", lang(user)))
     return FileResponse(path, headers={"Cache-Control": "private, no-store"})
@@ -430,6 +436,24 @@ def admin_officers(user: User = Depends(require_roles("admin")), db: Session = D
     return [{"id": o.id, "name": o.name, "mobile": o.mobile, "gender": o.gender, "email": o.email, "profile_photo_data": o.profile_photo_data, "department": o.department, "city": o.city, "district": o.district, "state": o.state, "address": o.address, "latitude": o.latitude, "longitude": o.longitude, "active": o.active} for o in officers]
 
 
+@router.get("/admin/registration-ids")
+def admin_registration_ids(user: User = Depends(require_roles("admin"))):
+    settings = get_settings()
+    return {
+        "admin": {"label": "Administrator", "registration_id": settings.admin_registration_id},
+        "officers": [
+            {"department": "Water Supply Department", "category": "💧 Water Supply", "registration_id": settings.officer_water_id},
+            {"department": "Electricity Department", "category": "⚡ Electricity", "registration_id": settings.officer_electricity_id},
+            {"department": "Municipal Street Light Department", "category": "💡 Street Light", "registration_id": settings.officer_street_light_id},
+            {"department": "Road Department", "category": "🛣️ Road", "registration_id": settings.officer_road_id},
+            {"department": "Health Department", "category": "🏥 Healthcare", "registration_id": settings.officer_healthcare_id},
+            {"department": "Sanitation Department", "category": "🧹 Sanitation", "registration_id": settings.officer_sanitation_id},
+            {"department": "Drainage Department", "category": "🚰 Drainage", "registration_id": settings.officer_drainage_id},
+            {"department": "Environment Department", "category": "🌱 Environment", "registration_id": settings.officer_environment_id},
+        ],
+    }
+
+
 @router.get("/admin/health-summary")
 def admin_summary(user: User = Depends(require_roles("admin")), db: Session = Depends(get_db)):
     total = db.scalar(select(func.count()).select_from(Complaint)) or 0
@@ -450,6 +474,12 @@ def admin_summary(user: User = Depends(require_roles("admin")), db: Session = De
     }
 
 
+@router.get("/admin/feedback")
+def admin_feedback(user: User = Depends(require_roles("admin")), db: Session = Depends(get_db)):
+    rows = db.execute(select(Feedback, Complaint, User).join(Complaint, Feedback.complaint_id == Complaint.id).join(User, Feedback.citizen_id == User.id).order_by(Feedback.created_at.desc())).all()
+    return [{"id": feedback.id, "complaint_id": complaint.id, "ticket_number": complaint.ticket_number, "citizen_name": citizen.name, "rating": feedback.rating, "comment": feedback.comment, "created_at": feedback.created_at} for feedback, complaint, citizen in rows]
+
+
 @router.get("/notifications", response_model=list[NotificationOut])
 def notifications(user: User = Depends(current_user), db: Session = Depends(get_db)):
     return db.scalars(select(Notification).where(Notification.user_id == user.id).order_by(Notification.created_at.desc()).limit(100)).all()
@@ -466,10 +496,30 @@ def mark_notification_read(notification_id: int, user: User = Depends(current_us
 def create_feedback(complaint_id: int, payload: FeedbackCreate, user: User = Depends(require_roles("citizen")), db: Session = Depends(get_db)):
     complaint = db.get(Complaint, complaint_id)
     if complaint is None or complaint.citizen_id != user.id: raise HTTPException(404, "Complaint not found.")
-    if complaint.status not in {"resolved", "closed"}: raise HTTPException(409, "Feedback can be submitted after resolution.")
+    if complaint.status not in {"resolved", "rejected", "closed"}: raise HTTPException(409, "Feedback can be submitted after resolution or rejection.")
     if db.scalar(select(Feedback.id).where(Feedback.complaint_id == complaint_id)) is not None: raise HTTPException(409, "Feedback has already been submitted for this complaint.")
     feedback = Feedback(complaint_id=complaint_id, citizen_id=user.id, rating=payload.rating, comment=payload.comment)
     db.add(feedback); db.commit(); db.refresh(feedback); return feedback
+
+
+@router.post("/complaints/{complaint_id}/reminder", status_code=201)
+def remind_officer(complaint_id: int, user: User = Depends(require_roles("citizen")), db: Session = Depends(get_db)):
+    complaint = db.get(Complaint, complaint_id)
+    if complaint is None or complaint.citizen_id != user.id:
+        raise HTTPException(404, message("not_found", lang(user)))
+    if complaint.status not in {"pending", "in_progress"}:
+        raise HTTPException(409, "Reminders are only available for pending or in-progress complaints.")
+    officer_ids = set()
+    if complaint.assigned_officer_id:
+        officer_ids.add(complaint.assigned_officer_id)
+    elif complaint.assigned_department:
+        officer_ids.update(db.scalars(select(User.id).where(User.role == "officer", User.department == complaint.assigned_department, User.active.is_(True))).all())
+    if not officer_ids:
+        raise HTTPException(409, "No active officer is assigned to this complaint yet.")
+    for officer_id in officer_ids:
+        notify_user(db, officer_id, "Citizen reminder", "नागरिक का अनुस्मारक", f"The citizen sent a reminder for complaint {complaint.ticket_number}.", f"नागरिक ने शिकायत {complaint.ticket_number} के लिए अनुस्मारक भेजा है।", complaint.id)
+    db.commit()
+    return {"success": True, "notified_officers": len(officer_ids)}
 
 
 @router.get("/complaints/{complaint_id}/feedback", response_model=FeedbackOut | None)

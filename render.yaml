@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: nivaran-grievance
+    runtime: python
+    region: singapore
+    plan: 0.5c-512mb
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    disk:
+      name: nivaran-uploads
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ENVIRONMENT
+        value: "production"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nivaran-postgres
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ISSUER
+        value: nivaran-grievance-system
+      - key: ACCESS_TOKEN_MINUTES
+        value: "30"
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: MAX_UPLOAD_BYTES
+        value: "5242880"
+      - key: ADMIN_REGISTRATION_ID
+        sync: false
+      - key: OFFICER_WATER_ID
+        sync: false
+      - key: OFFICER_ELECTRICITY_ID
+        sync: false
+      - key: OFFICER_STREET_LIGHT_ID
+        sync: false
+      - key: OFFICER_ROAD_ID
+        sync: false
+      - key: OFFICER_HEALTHCARE_ID
+        sync: false
+      - key: OFFICER_SANITATION_ID
+        sync: false
+      - key: OFFICER_DRAINAGE_ID
+        sync: false
+      - key: OFFICER_ENVIRONMENT_ID
+        sync: false
+
+databases:
+  - name: nivaran-postgres
+    databaseName: nivaran
+    user: nivaran
+    region: singapore
+    plan: 0.5c-1g

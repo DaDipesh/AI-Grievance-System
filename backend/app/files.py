@@ -14,7 +14,10 @@ MAX_IMAGE_PIXELS = 20_000_000
 
 async def save_evidence(upload: UploadFile, language: str) -> str:
     settings = get_settings()
-    root = Path(settings.upload_dir).resolve()
+    upload_dir = Path(settings.upload_dir)
+    if not upload_dir.is_absolute():
+        upload_dir = Path(__file__).resolve().parents[1] / upload_dir
+    root = upload_dir.resolve()
     root.mkdir(parents=True, exist_ok=True)
     data = await upload.read(settings.max_upload_bytes + 1)
     if not data or len(data) > settings.max_upload_bytes:

@@ -1,6 +1,8 @@
 from collections.abc import Generator
+from pathlib import Path
 
 from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import get_settings
@@ -11,8 +13,16 @@ class Base(DeclarativeBase):
 
 
 settings = get_settings()
-connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
-engine = create_engine(settings.database_url, pool_pre_ping=True, connect_args=connect_args)
+database_url = make_url(settings.database_url)
+if database_url.drivername in {"postgres", "postgresql"}:
+    # Render provides postgresql:// URLs; this project installs psycopg v3.
+    database_url = database_url.set(drivername="postgresql+psycopg")
+if database_url.drivername.startswith("sqlite") and database_url.database not in {None, ":memory:"}:
+    database_path = Path(database_url.database)
+    if not database_path.is_absolute():
+        database_url = database_url.set(database=str((Path(__file__).resolve().parents[1] / database_path).resolve()))
+connect_args = {"check_same_thread": False} if database_url.drivername.startswith("sqlite") else {}
+engine = create_engine(database_url, pool_pre_ping=True, connect_args=connect_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
@@ -76,7 +86,7 @@ def init_db() -> None:
     # updates it on every write, so this is safe for both SQLite and PostgreSQL.
     with engine.begin() as conn:
         if inspect(engine).has_table("complaints"):
-            conn.execute(text("UPDATE complaints SET duplicate_flag = 0 WHERE duplicate_flag IS NULL"))
+            conn.execute(text("UPDATE complaints SET duplicate_flag = FALSE WHERE duplicate_flag IS NULL"))
             conn.execute(text("UPDATE complaints SET updated_at = created_at WHERE updated_at IS NULL"))
             conn.execute(text("UPDATE complaints SET escalation_level = 0 WHERE escalation_level IS NULL"))
 

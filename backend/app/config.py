@@ -10,11 +10,13 @@ ENV_FILE = BASE_DIR / ".env"
 class Settings(BaseSettings):
     # Local development works out of the box with SQLite.
     # Set DATABASE_URL in backend/.env to use PostgreSQL.
-    database_url: str = "sqlite:///./grievance.db"
+    # Keep the development database anchored to this backend directory even
+    # when Uvicorn is started from the repository root or an IDE terminal.
+    database_url: str = f"sqlite:///{(BASE_DIR / 'grievance.db').as_posix()}"
     jwt_secret: str = "dev-only-change-this-jwt-secret-please"
     jwt_issuer: str = "ai-grievance-system"
     access_token_minutes: int = 30
-    upload_dir: str = "./uploads"
+    upload_dir: str = str(BASE_DIR / "uploads")
     max_upload_bytes: int = 5 * 1024 * 1024
     environment: str = "development"
     admin_registration_id: str = ""
