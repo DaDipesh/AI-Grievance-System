@@ -1,0 +1,20 @@
+complaint_id,complaint_text,language,category_predicted,category_verified,severity,priority,department,city,district,area,resolution_hours
+TEST001,Kal se pani nahi aa raha,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Ratibad,26
+CMP-9FC884CD,Kal se pani nahi aa raha,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,,,,28.0
+CMP-DB352358,Kal se pani nahi aa raha,Hinglish,Water Supply,,High,High,Water Supply Department,,,,
+CMP-835C9BA3,Mere area me paani nahi aa raha,Hinglish,Water Supply,,Low,Normal,Water Supply Department,,,,
+CMP-50D80C83,लोग खुले में प्लास्टिक जला रहे हैं,Hindi,Environment,,High,High,Environment Department,,,,
+CMP-EFD38050,नल में पानी नहीं आ रहा है,Hindi,Water Supply,,High,High,Water Supply Department,,,,
+CMP-369BB541,There are frequent power cuts in our area,Hinglish,Electricity,,High,High,Electricity Department,,,,
+CMP-F64BFDC2,The garbage bin has been full for several days,English,Sanitation,,Medium,Medium,Sanitation Department,,,,
+CMP-46A5C4DE,transformer has blown of my village,English,Electricity,,Low,Normal,Electricity Department,,,,
+CMP-0A2AF34A,bijli ka khamba toot gya hai kal se bijli nahi hai,Hinglish,Electricity,,High,High,Electricity Department,,,,
+CMP-27432765,transformer ka tel khatam ho gy voltage low aa raha hai,Hinglish,Electricity,,Low,Normal,Electricity Department,,,,
+GRV-7CCDE58D,Kal se mere area me pani nahi aa raha hai,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Ratibad,0.0
+GRV-F67210D1,Kal se mere area me pani nahi aa raha hai,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Ratibad,0.0
+GRV-E5425606,Kal se pani nahi aa raha,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Ratibad,0.0
+GRV-23566ABC,Kal se mere area me pani nahi aa raha hai,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Ratibad,0.0
+GRV-3014A3E9,There has been no water supply in our village for 3 days,English,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Test Ward,0.0
+GRV-EA587DE1,mere yaha kal se pani nahi aa raha,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Bhopal,5.47
+GRV-EA587DE1,mere yaha kal se pani nahi aa raha,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Bhopal,6.8
+GRV-EA587DE1,mere yaha kal se pani nahi aa raha,Hinglish,Water Supply,Water Supply,High,High,Water Supply Department,Bhopal,Bhopal,Bhopal,17.51

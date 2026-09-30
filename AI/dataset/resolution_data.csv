@@ -1,0 +1,241 @@
+category,severity,priority,resolution_hours
+Water Supply,Low,Normal,72
+Water Supply,Low,Normal,84
+Water Supply,Low,Normal,96
+Water Supply,Low,Normal,108
+Water Supply,Low,Normal,120
+Water Supply,Low,Normal,132
+Water Supply,Low,Normal,144
+Water Supply,Low,Normal,156
+Water Supply,Medium,Medium,48
+Water Supply,Medium,Medium,54
+Water Supply,Medium,Medium,60
+Water Supply,Medium,Medium,66
+Water Supply,Medium,Medium,72
+Water Supply,Medium,Medium,78
+Water Supply,Medium,Medium,84
+Water Supply,Medium,Medium,90
+Water Supply,High,High,18
+Water Supply,High,High,20
+Water Supply,High,High,22
+Water Supply,High,High,24
+Water Supply,High,High,26
+Water Supply,High,High,28
+Water Supply,High,High,30
+Water Supply,Critical,Urgent,6
+Water Supply,Critical,Urgent,8
+Water Supply,Critical,Urgent,10
+Water Supply,Critical,Urgent,12
+Water Supply,Critical,Urgent,14
+Water Supply,Critical,Urgent,16
+Water Supply,Critical,Urgent,18
+Electricity,Low,Normal,48
+Electricity,Low,Normal,60
+Electricity,Low,Normal,72
+Electricity,Low,Normal,84
+Electricity,Low,Normal,96
+Electricity,Low,Normal,108
+Electricity,Low,Normal,120
+Electricity,Low,Normal,132
+Electricity,Medium,Medium,24
+Electricity,Medium,Medium,30
+Electricity,Medium,Medium,36
+Electricity,Medium,Medium,42
+Electricity,Medium,Medium,48
+Electricity,Medium,Medium,54
+Electricity,Medium,Medium,60
+Electricity,Medium,Medium,66
+Electricity,High,High,12
+Electricity,High,High,14
+Electricity,High,High,16
+Electricity,High,High,18
+Electricity,High,High,20
+Electricity,High,High,22
+Electricity,High,High,24
+Electricity,Critical,Urgent,4
+Electricity,Critical,Urgent,5
+Electricity,Critical,Urgent,6
+Electricity,Critical,Urgent,7
+Electricity,Critical,Urgent,8
+Electricity,Critical,Urgent,10
+Electricity,Critical,Urgent,12
+Street Light,Low,Normal,96
+Street Light,Low,Normal,108
+Street Light,Low,Normal,120
+Street Light,Low,Normal,132
+Street Light,Low,Normal,144
+Street Light,Low,Normal,156
+Street Light,Low,Normal,168
+Street Light,Low,Normal,180
+Street Light,Medium,Medium,48
+Street Light,Medium,Medium,54
+Street Light,Medium,Medium,60
+Street Light,Medium,Medium,66
+Street Light,Medium,Medium,72
+Street Light,Medium,Medium,78
+Street Light,Medium,Medium,84
+Street Light,Medium,Medium,90
+Street Light,High,High,24
+Street Light,High,High,28
+Street Light,High,High,32
+Street Light,High,High,36
+Street Light,High,High,40
+Street Light,High,High,44
+Street Light,High,High,48
+Street Light,Critical,Urgent,8
+Street Light,Critical,Urgent,10
+Street Light,Critical,Urgent,12
+Street Light,Critical,Urgent,14
+Street Light,Critical,Urgent,16
+Street Light,Critical,Urgent,18
+Street Light,Critical,Urgent,20
+Road,Low,Normal,120
+Road,Low,Normal,132
+Road,Low,Normal,144
+Road,Low,Normal,156
+Road,Low,Normal,168
+Road,Low,Normal,180
+Road,Low,Normal,192
+Road,Low,Normal,204
+Road,Medium,Medium,84
+Road,Medium,Medium,96
+Road,Medium,Medium,108
+Road,Medium,Medium,120
+Road,Medium,Medium,132
+Road,Medium,Medium,144
+Road,Medium,Medium,156
+Road,Medium,Medium,150
+Road,High,High,48
+Road,High,High,54
+Road,High,High,60
+Road,High,High,66
+Road,High,High,72
+Road,High,High,78
+Road,High,High,84
+Road,Critical,Urgent,12
+Road,Critical,Urgent,15
+Road,Critical,Urgent,18
+Road,Critical,Urgent,21
+Road,Critical,Urgent,24
+Road,Critical,Urgent,27
+Road,Critical,Urgent,30
+Healthcare,Low,Normal,72
+Healthcare,Low,Normal,84
+Healthcare,Low,Normal,96
+Healthcare,Low,Normal,108
+Healthcare,Low,Normal,120
+Healthcare,Low,Normal,132
+Healthcare,Low,Normal,144
+Healthcare,Low,Normal,156
+Healthcare,Medium,Medium,36
+Healthcare,Medium,Medium,42
+Healthcare,Medium,Medium,48
+Healthcare,Medium,Medium,54
+Healthcare,Medium,Medium,60
+Healthcare,Medium,Medium,66
+Healthcare,Medium,Medium,72
+Healthcare,Medium,Medium,69
+Healthcare,High,High,18
+Healthcare,High,High,20
+Healthcare,High,High,22
+Healthcare,High,High,24
+Healthcare,High,High,26
+Healthcare,High,High,28
+Healthcare,High,High,30
+Healthcare,Critical,Urgent,4
+Healthcare,Critical,Urgent,6
+Healthcare,Critical,Urgent,8
+Healthcare,Critical,Urgent,10
+Healthcare,Critical,Urgent,12
+Healthcare,Critical,Urgent,14
+Healthcare,Critical,Urgent,16
+Sanitation,Low,Normal,72
+Sanitation,Low,Normal,84
+Sanitation,Low,Normal,96
+Sanitation,Low,Normal,108
+Sanitation,Low,Normal,120
+Sanitation,Low,Normal,132
+Sanitation,Low,Normal,144
+Sanitation,Low,Normal,156
+Sanitation,Medium,Medium,48
+Sanitation,Medium,Medium,54
+Sanitation,Medium,Medium,60
+Sanitation,Medium,Medium,66
+Sanitation,Medium,Medium,72
+Sanitation,Medium,Medium,78
+Sanitation,Medium,Medium,84
+Sanitation,Medium,Medium,81
+Sanitation,High,High,24
+Sanitation,High,High,28
+Sanitation,High,High,32
+Sanitation,High,High,36
+Sanitation,High,High,40
+Sanitation,High,High,44
+Sanitation,High,High,48
+Sanitation,Critical,Urgent,8
+Sanitation,Critical,Urgent,10
+Sanitation,Critical,Urgent,12
+Sanitation,Critical,Urgent,14
+Sanitation,Critical,Urgent,16
+Sanitation,Critical,Urgent,18
+Sanitation,Critical,Urgent,20
+Drainage,Low,Normal,96
+Drainage,Low,Normal,108
+Drainage,Low,Normal,120
+Drainage,Low,Normal,132
+Drainage,Low,Normal,144
+Drainage,Low,Normal,156
+Drainage,Low,Normal,168
+Drainage,Low,Normal,180
+Drainage,Medium,Medium,48
+Drainage,Medium,Medium,54
+Drainage,Medium,Medium,60
+Drainage,Medium,Medium,66
+Drainage,Medium,Medium,72
+Drainage,Medium,Medium,78
+Drainage,Medium,Medium,84
+Drainage,Medium,Medium,81
+Drainage,High,High,18
+Drainage,High,High,21
+Drainage,High,High,24
+Drainage,High,High,27
+Drainage,High,High,30
+Drainage,High,High,33
+Drainage,High,High,36
+Drainage,Critical,Urgent,6
+Drainage,Critical,Urgent,8
+Drainage,Critical,Urgent,10
+Drainage,Critical,Urgent,12
+Drainage,Critical,Urgent,14
+Drainage,Critical,Urgent,16
+Drainage,Critical,Urgent,18
+Environment,Low,Normal,120
+Environment,Low,Normal,132
+Environment,Low,Normal,144
+Environment,Low,Normal,156
+Environment,Low,Normal,168
+Environment,Low,Normal,180
+Environment,Low,Normal,192
+Environment,Low,Normal,204
+Environment,Medium,Medium,72
+Environment,Medium,Medium,84
+Environment,Medium,Medium,96
+Environment,Medium,Medium,108
+Environment,Medium,Medium,120
+Environment,Medium,Medium,132
+Environment,Medium,Medium,144
+Environment,Medium,Medium,138
+Environment,High,High,36
+Environment,High,High,42
+Environment,High,High,48
+Environment,High,High,54
+Environment,High,High,60
+Environment,High,High,66
+Environment,High,High,72
+Environment,Critical,Urgent,12
+Environment,Critical,Urgent,15
+Environment,Critical,Urgent,18
+Environment,Critical,Urgent,21
+Environment,Critical,Urgent,24
+Environment,Critical,Urgent,27
+Environment,Critical,Urgent,30
