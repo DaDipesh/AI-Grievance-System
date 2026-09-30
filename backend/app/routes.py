@@ -330,13 +330,19 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
     )
     db.add(complaint); db.flush()
     db.add(ComplaintStatusHistory(complaint_id=complaint.id, old_status=None, new_status="pending", note="Complaint registered", changed_by_user_id=user.id))
-    notify_user(db, user.id, "Complaint registered", "शिकायत दर्ज हो गई", message("registered", "en", ticket=ticket, category=complaint.category_predicted or "", city=complaint.city or "", area=complaint.area or ""), message("registered", "hi", ticket=ticket, category=complaint.category_predicted or "", city=complaint.city or "", area=complaint.area or ""), complaint.id, language_override=complaint.language)
-    notify_department(db, department, ticket, complaint.category_predicted or "", complaint.id)
-    if officer:
-        notify_user(db, officer.id, "Complaint assigned", "शिकायत सौंपी गई", f"Complaint {ticket} was assigned to you.", f"शिकायत {ticket} आपको सौंपी गई है।", complaint.id)
     if draft:
         draft.complaint_id = complaint.id
+    # Save complaint and history first; notification issues must not hide a report.
     db.commit(); db.refresh(complaint)
+    try:
+        notify_user(db, user.id, "Complaint registered", "शिकायत दर्ज हो गई", message("registered", "en", ticket=ticket, category=complaint.category_predicted or "", city=complaint.city or "", area=complaint.area or ""), message("registered", "hi", ticket=ticket, category=complaint.category_predicted or "", city=complaint.city or "", area=complaint.area or ""), complaint.id, language_override=complaint.language)
+        notify_department(db, department, ticket, complaint.category_predicted or "", complaint.id)
+        if officer:
+            notify_user(db, officer.id, "Complaint assigned", "शिकायत सौंपी गई", f"Complaint {ticket} was assigned to you.", f"शिकायत {ticket} आपको सौंपी गई है।", complaint.id)
+        db.commit()
+    except Exception:
+        db.rollback()
+        logger.exception("Complaint %s was saved, but notification delivery failed", ticket)
     return complaint
 
 
