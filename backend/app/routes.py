@@ -288,6 +288,12 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
     draft = None
     if payload.preview_token:
         draft = db.scalar(select(ComplaintDraft).where(ComplaintDraft.token == payload.preview_token, ComplaintDraft.citizen_id == user.id))
+        # A previous request may have committed the complaint but lost its
+        # response. Return the existing record on a retry with the same token.
+        if draft is not None and draft.complaint_id is not None:
+            submitted = db.get(Complaint, draft.complaint_id)
+            if submitted is not None:
+                return submitted
         if draft is not None and aware(draft.expires_at) > utcnow():
             data = draft.payload_json; ai_result = draft.ai_json; ticket = draft.ticket_number
             payload = ComplaintCreate(**data, preview_token=draft.token)
@@ -298,6 +304,7 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
             # analyze that payload again instead of blocking complaint creation.
             if draft is not None:
                 db.delete(draft)
+                draft = None
             ai_result = _run_ai(payload)
             ticket = _new_ticket(db)
     else:
@@ -328,7 +335,7 @@ def create_complaint(payload: ComplaintCreate, user: User = Depends(require_role
     if officer:
         notify_user(db, officer.id, "Complaint assigned", "शिकायत सौंपी गई", f"Complaint {ticket} was assigned to you.", f"शिकायत {ticket} आपको सौंपी गई है।", complaint.id)
     if draft:
-        db.delete(draft)
+        draft.complaint_id = complaint.id
     db.commit(); db.refresh(complaint)
     return complaint
 

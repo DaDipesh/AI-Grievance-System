@@ -134,7 +134,7 @@
 <script>
 (function(){const sel=document.getElementById('dashboardLanguage'),themeButton=document.getElementById('themeToggle');if(!sel)return;const lang=localStorage.getItem('sg_lang')||'en';sel.value=lang;sel.addEventListener('change',async()=>{localStorage.setItem('sg_lang',sel.value);try{await window.SG_API.updateLanguage(sel.value)}catch(e){window.showToast?.(e.message)}location.reload()});document.getElementById('logoutBtn')?.addEventListener('click',e=>{e.preventDefault();window.SG_API?.clearSession();location.href='login.html'});const setTheme=theme=>{const isLight=theme==='light';document.body.classList.toggle('theme-light',isLight);localStorage.setItem('sg_theme',theme);if(themeButton){themeButton.innerHTML=isLight?'<i class="bi bi-sun-fill"></i>':'<i class="bi bi-moon-stars-fill"></i>';themeButton.setAttribute('aria-label',isLight?'Light theme active. Switch to dark':'Dark theme active. Switch to light');themeButton.title=isLight?'Light theme active':'Dark theme active'}};setTheme(localStorage.getItem('sg_theme')||'dark');themeButton?.addEventListener('click',()=>setTheme(document.body.classList.contains('theme-light')?'dark':'light'))})();
 </script>
-<script src="js/api.js"></script><script src="js/main.js"></script><script src="js/backend-integration.js"></script><script src="js/voice-input.js?v=2"></script>
+<script src="js/api.js?v=20260930a"></script><script src="js/main.js"></script><script src="js/backend-integration.js?v=20260930a"></script><script src="js/voice-input.js?v=2"></script>
 <style>
 html[lang="hi"] body{font-family:"Nirmala UI","Noto Sans Devanagari","Mangal",sans-serif;letter-spacing:0}
 html[lang="hi"] .hero-copy h1{line-height:1.28;word-spacing:.08em;letter-spacing:0;margin-bottom:24px}

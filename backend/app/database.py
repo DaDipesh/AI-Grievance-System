@@ -82,6 +82,10 @@ def init_db() -> None:
         "updated_at": "TIMESTAMP",
     })
 
+    _add_missing_columns("complaint_drafts", {
+        "complaint_id": "INTEGER",
+    })
+
     # Existing databases may have NULL updated_at after migration; the app
     # updates it on every write, so this is safe for both SQLite and PostgreSQL.
     with engine.begin() as conn:

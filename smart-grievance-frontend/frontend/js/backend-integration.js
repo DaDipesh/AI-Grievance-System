@@ -84,7 +84,17 @@
     if(!previewPayload) return;
     submitBtn.disabled=true; submitBtn.innerHTML='<span class="spinner-border spinner-border-sm"></span> '+t('Submitting…','जमा किया जा रहा है…');
     try {
-      const complaint=await SG_API.createComplaint(previewPayload);
+      let complaint;
+      try {
+        complaint=await SG_API.createComplaint(previewPayload);
+      } catch(error) {
+        if(error.status!==410) throw error;
+        // Recover if a stale frontend/backend still rejects an expired or
+        // missing preview token. Recreate the preview from the same form data.
+        const {preview_token}=await SG_API.previewComplaint(previewPayload);
+        previewPayload={...previewPayload,preview_token};
+        complaint=await SG_API.createComplaint(previewPayload);
+      }
       previewPayload=null;
       uploadedEvidence=''; if($('#complaintImage'))$('#complaintImage').value='';
       localStorage.setItem('sg_last_complaint_id',String(complaint.id)); localStorage.setItem('sg_last_ticket',complaint.ticket_number);

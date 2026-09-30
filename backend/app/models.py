@@ -116,6 +116,7 @@ class ComplaintDraft(Base):
     payload_json: Mapped[dict] = mapped_column(JSON)
     ai_json: Mapped[dict] = mapped_column(JSON)
     ticket_number: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    complaint_id: Mapped[int | None] = mapped_column(ForeignKey("complaints.id", ondelete="SET NULL"))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
